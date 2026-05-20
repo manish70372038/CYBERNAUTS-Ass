@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { User, CreateUserPayload, UpdateUserPayload } from "../types";
-import { fetchUsers, createUser, updateUser, deleteUser } from "../services/api";
+import {
+  fetchUsers, createUser, updateUser,
+  deleteUser, linkUsers, unlinkUsers,
+} from "../services/api";
 import { useGraphContext } from "../context/GraphContext";
 
 export const useUsers = () => {
@@ -20,9 +23,7 @@ export const useUsers = () => {
     }
   };
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
+  useEffect(() => { loadUsers(); }, []);
 
   const create = async (payload: CreateUserPayload) => {
     try {
@@ -53,9 +54,31 @@ export const useUsers = () => {
       await refreshAll();
       addToast("User deleted!", "success");
     } catch {
-      addToast("Cannot delete user with active friendships", "error");
+      addToast("Cannot delete: unlink friends first", "error");
     }
   };
 
-  return { users, loading, loadUsers, create, update, remove };
+  const link = async (id: string, friendId: string) => {
+    try {
+      await linkUsers(id, friendId);
+      await loadUsers();
+      await refreshAll();
+      addToast("Friendship created!", "success");
+    } catch {
+      addToast("Failed to link users", "error");
+    }
+  };
+
+  const unlink = async (id: string, friendId: string) => {
+    try {
+      await unlinkUsers(id, friendId);
+      await loadUsers();
+      await refreshAll();
+      addToast("Friendship removed!", "success");
+    } catch {
+      addToast("Failed to unlink users", "error");
+    }
+  };
+
+  return { users, loading, loadUsers, create, update, remove, link, unlink };
 };
