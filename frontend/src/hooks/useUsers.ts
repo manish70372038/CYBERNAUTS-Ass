@@ -1,99 +1,61 @@
-import { useCallback } from 'react';
-import { useGraphContext } from '../context/GraphContext';
-import {
-  createUser,
-  updateUser,
-  deleteUser,
-  linkUsers,
-  unlinkUsers,
-} from '../services/api';
-import type { CreateUserPayload, UpdateUserPayload } from '../types';
+import { useState, useEffect } from "react";
+import { User, CreateUserPayload, UpdateUserPayload } from "../types";
+import { fetchUsers, createUser, updateUser, deleteUser } from "../services/api";
+import { useGraphContext } from "../context/GraphContext";
 
-export function useUsers() {
-  const { state, dispatch, refreshAll, addToast } = useGraphContext();
+export const useUsers = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { refreshAll, addToast } = useGraphContext();
 
-  const create = useCallback(
-    async (payload: CreateUserPayload) => {
-      try {
-        const user = await createUser(payload);
-        dispatch({ type: 'UPSERT_USER', payload: user });
-        addToast('success', `User "${user.username}" created!`);
-        await refreshAll();
-        return user;
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to create user';
-        addToast('error', msg);
-        throw err;
-      }
-    },
-    [dispatch, addToast, refreshAll]
-  );
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchUsers();
+      setUsers(data);
+    } catch {
+      addToast("Failed to load users", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const update = useCallback(
-    async (id: string, payload: UpdateUserPayload) => {
-      try {
-        const user = await updateUser(id, payload);
-        dispatch({ type: 'UPSERT_USER', payload: user });
-        addToast('success', `User "${user.username}" updated!`);
-        await refreshAll();
-        return user;
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to update user';
-        addToast('error', msg);
-        throw err;
-      }
-    },
-    [dispatch, addToast, refreshAll]
-  );
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
-  const remove = useCallback(
-    async (id: string) => {
-      try {
-        await deleteUser(id);
-        dispatch({ type: 'REMOVE_USER', payload: id });
-        if (state.selectedUserId === id) {
-          dispatch({ type: 'SELECT_USER', payload: null });
-        }
-        addToast('success', 'User deleted');
-        await refreshAll();
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to delete user';
-        addToast('error', msg);
-        throw err;
-      }
-    },
-    [dispatch, addToast, refreshAll, state.selectedUserId]
-  );
+  const create = async (payload: CreateUserPayload) => {
+    try {
+      await createUser(payload);
+      await loadUsers();
+      await refreshAll();
+      addToast("User created!", "success");
+    } catch {
+      addToast("Failed to create user", "error");
+    }
+  };
 
-  const link = useCallback(
-    async (id: string, targetId: string) => {
-      try {
-        await linkUsers(id, targetId);
-        addToast('success', 'Users linked!');
-        await refreshAll();
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to link users';
-        addToast('error', msg);
-        throw err;
-      }
-    },
-    [addToast, refreshAll]
-  );
+  const update = async (id: string, payload: UpdateUserPayload) => {
+    try {
+      await updateUser(id, payload);
+      await loadUsers();
+      await refreshAll();
+      addToast("User updated!", "success");
+    } catch {
+      addToast("Failed to update user", "error");
+    }
+  };
 
-  const unlink = useCallback(
-    async (id: string, targetId: string) => {
-      try {
-        await unlinkUsers(id, targetId);
-        addToast('success', 'Users unlinked');
-        await refreshAll();
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Failed to unlink users';
-        addToast('error', msg);
-        throw err;
-      }
-    },
-    [addToast, refreshAll]
-  );
+  const remove = async (id: string) => {
+    try {
+      await deleteUser(id);
+      await loadUsers();
+      await refreshAll();
+      addToast("User deleted!", "success");
+    } catch {
+      addToast("Cannot delete user with active friendships", "error");
+    }
+  };
 
-  return { users: state.users, create, update, remove, link, unlink };
-}
+  return { users, loading, loadUsers, create, update, remove };
+};

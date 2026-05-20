@@ -1,41 +1,35 @@
-import { useState, useCallback } from 'react';
-import { fetchRecommendations, submitFeedback } from '../services/api';
-import type { RecommendationResponse, FeedbackPayload } from '../types';
-import { useGraphContext } from '../context/GraphContext';
-import { debounce } from '../utils/debounce';
+import { useState } from "react";
+import { RecommendationResponse, FeedbackPayload } from "../types";
+import { fetchRecommendations, submitFeedback } from "../services/api";
+import { useGraphContext } from "../context/GraphContext";
 
-export function useRecommendations() {
-  const { addToast } = useGraphContext();
-  const [data, setData] = useState<RecommendationResponse | null>(null);
+export const useRecommendations = () => {
+  const [recommendations, setRecommendations] =
+    useState<RecommendationResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const { addToast } = useGraphContext();
 
-  const fetch = useCallback(
-    debounce(async (userId: string) => {
-      setLoading(true);
-      try {
-        const res = await fetchRecommendations(userId);
-        setData(res);
-      } catch {
-        addToast('error', 'Failed to load recommendations');
-      } finally {
-        setLoading(false);
-      }
-    }, 400),
-    [addToast]
-  );
+  const load = async (userId: string) => {
+    setLoading(true);
+    try {
+      const data = await fetchRecommendations(userId);
+      setRecommendations(data);
+    } catch {
+      addToast("Failed to load recommendations", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const sendFeedback = useCallback(
-    async (userId: string, payload: FeedbackPayload) => {
-      try {
-        await submitFeedback(userId, payload);
-        addToast('success', 'Feedback recorded!');
-        fetch(userId); // refresh
-      } catch {
-        addToast('error', 'Failed to submit feedback');
-      }
-    },
-    [addToast, fetch]
-  );
+  const feedback = async (userId: string, payload: FeedbackPayload) => {
+    try {
+      await submitFeedback(userId, payload);
+      await load(userId);
+      addToast("Feedback recorded!", "success");
+    } catch {
+      addToast("Failed to submit feedback", "error");
+    }
+  };
 
-  return { recommendations: data, loading, fetch, sendFeedback };
-}
+  return { recommendations, loading, load, feedback };
+};

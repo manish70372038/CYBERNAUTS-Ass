@@ -1,8 +1,9 @@
 import axios from "axios";
-import { FeedbackPayload } from "../types";
+import { FeedbackPayload, CreateUserPayload, UpdateUserPayload } from "../types";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: (import.meta as unknown as { env: { VITE_API_URL: string } }).env
+    .VITE_API_URL || "http://localhost:5000/api",
 });
 
 export const fetchUsers = async () => {
@@ -10,12 +11,12 @@ export const fetchUsers = async () => {
   return res.data.data;
 };
 
-export const createUser = async (data: { username: string; age: number; hobbies: string[] }) => {
+export const createUser = async (data: CreateUserPayload) => {
   const res = await API.post("/users", data);
   return res.data.data;
 };
 
-export const updateUser = async (id: string, data: Partial<{ username: string; age: number; hobbies: string[] }>) => {
+export const updateUser = async (id: string, data: UpdateUserPayload) => {
   const res = await API.put(`/users/${id}`, data);
   return res.data.data;
 };
