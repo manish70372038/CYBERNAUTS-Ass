@@ -4,10 +4,9 @@ import { fetchRecommendations, submitFeedback } from "../services/api";
 import { useGraphContext } from "../context/GraphContext";
 
 export const useRecommendations = () => {
-  const [recommendations, setRecommendations] =
-    useState<RecommendationResponse | null>(null);
+  const [recommendations, setRecommendations] = useState<RecommendationResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const { addToast } = useGraphContext();
+  const { addToast, refreshAll } = useGraphContext();
 
   const load = async (userId: string) => {
     setLoading(true);
@@ -25,6 +24,7 @@ export const useRecommendations = () => {
     try {
       await submitFeedback(userId, payload);
       await load(userId);
+      await refreshAll();
       addToast("Feedback recorded!", "success");
     } catch {
       addToast("Failed to submit feedback", "error");

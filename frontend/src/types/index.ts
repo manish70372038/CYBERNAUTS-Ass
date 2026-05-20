@@ -6,10 +6,7 @@ export interface User {
   friends: string[];
   popularityScore: number;
   createdAt: string;
-  feedbackData: {
-    accepted: string[];
-    rejected: string[];
-  };
+  feedbackData: { accepted: string[]; rejected: string[] };
 }
 
 export interface GraphNode {

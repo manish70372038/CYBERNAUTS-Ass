@@ -1,45 +1,23 @@
-import { useState, useEffect } from "react";
-import { User, CreateUserPayload, UpdateUserPayload } from "../types";
-import {
-  fetchUsers, createUser, updateUser,
-  deleteUser, linkUsers, unlinkUsers,
-} from "../services/api";
 import { useGraphContext } from "../context/GraphContext";
+import { createUser, updateUser, deleteUser, linkUsers, unlinkUsers } from "../services/api";
+import { CreateUserPayload, UpdateUserPayload } from "../types";
 
 export const useUsers = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
-  const { refreshAll, addToast } = useGraphContext();
-
-  const loadUsers = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchUsers();
-      setUsers(data);
-    } catch {
-      addToast("Failed to load users", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { loadUsers(); }, []);
+  const { users, loading, refreshAll, addToast } = useGraphContext();
 
   const create = async (payload: CreateUserPayload) => {
     try {
       await createUser(payload);
-      await loadUsers();
       await refreshAll();
-      addToast("User created!", "success");
-    } catch {
-      addToast("Failed to create user", "error");
+      addToast(`User "${payload.username}" created!`, "success");
+    } catch (e: any) {
+      addToast(e?.response?.data?.message || "Failed to create user", "error");
     }
   };
 
   const update = async (id: string, payload: UpdateUserPayload) => {
     try {
       await updateUser(id, payload);
-      await loadUsers();
       await refreshAll();
       addToast("User updated!", "success");
     } catch {
@@ -50,35 +28,32 @@ export const useUsers = () => {
   const remove = async (id: string) => {
     try {
       await deleteUser(id);
-      await loadUsers();
       await refreshAll();
       addToast("User deleted!", "success");
-    } catch {
-      addToast("Cannot delete: unlink friends first", "error");
+    } catch (e: any) {
+      addToast(e?.response?.data?.message || "Unlink friends first!", "error");
     }
   };
 
   const link = async (id: string, friendId: string) => {
     try {
       await linkUsers(id, friendId);
-      await loadUsers();
       await refreshAll();
       addToast("Friendship created!", "success");
-    } catch {
-      addToast("Failed to link users", "error");
+    } catch (e: any) {
+      addToast(e?.response?.data?.message || "Failed to link", "error");
     }
   };
 
   const unlink = async (id: string, friendId: string) => {
     try {
       await unlinkUsers(id, friendId);
-      await loadUsers();
       await refreshAll();
       addToast("Friendship removed!", "success");
     } catch {
-      addToast("Failed to unlink users", "error");
+      addToast("Failed to unlink", "error");
     }
   };
 
-  return { users, loading, loadUsers, create, update, remove, link, unlink };
+  return { users, loading, create, update, remove, link, unlink };
 };

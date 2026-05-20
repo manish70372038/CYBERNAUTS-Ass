@@ -1,52 +1,17 @@
 import axios from "axios";
 import { FeedbackPayload, CreateUserPayload, UpdateUserPayload } from "../types";
 
-const API = axios.create({
-  baseURL: (import.meta as unknown as { env: { VITE_API_URL: string } }).env
-    .VITE_API_URL || "http://localhost:5000/api",
-});
+const BASE = (import.meta as any).env?.VITE_API_URL || "http://localhost:5000/api";
 
-export const fetchUsers = async () => {
-  const res = await API.get("/users");
-  return res.data.data;
-};
+const API = axios.create({ baseURL: BASE });
 
-export const createUser = async (data: CreateUserPayload) => {
-  const res = await API.post("/users", data);
-  return res.data.data;
-};
-
-export const updateUser = async (id: string, data: UpdateUserPayload) => {
-  const res = await API.put(`/users/${id}`, data);
-  return res.data.data;
-};
-
-export const deleteUser = async (id: string) => {
-  const res = await API.delete(`/users/${id}`);
-  return res.data;
-};
-
-export const linkUsers = async (id: string, friendId: string) => {
-  const res = await API.post(`/users/${id}/link`, { friendId });
-  return res.data;
-};
-
-export const unlinkUsers = async (id: string, friendId: string) => {
-  const res = await API.delete(`/users/${id}/unlink`, { data: { friendId } });
-  return res.data;
-};
-
-export const fetchGraph = async () => {
-  const res = await API.get("/graph");
-  return res.data.data;
-};
-
-export const fetchRecommendations = async (id: string) => {
-  const res = await API.get(`/users/${id}/recommendations`);
-  return res.data.data;
-};
-
-export const submitFeedback = async (id: string, payload: FeedbackPayload) => {
-  const res = await API.post(`/users/${id}/recommendations/feedback`, payload);
-  return res.data;
-};
+export const fetchUsers = async () => (await API.get("/users")).data.data;
+export const createUser = async (d: CreateUserPayload) => (await API.post("/users", d)).data.data;
+export const updateUser = async (id: string, d: UpdateUserPayload) => (await API.put(`/users/${id}`, d)).data.data;
+export const deleteUser = async (id: string) => (await API.delete(`/users/${id}`)).data;
+export const linkUsers = async (id: string, friendId: string) => (await API.post(`/users/${id}/link`, { friendId })).data;
+export const unlinkUsers = async (id: string, friendId: string) => (await API.delete(`/users/${id}/unlink`, { data: { friendId } })).data;
+export const fetchGraph = async () => (await API.get("/graph")).data.data;
+export const fetchAllUsers = async () => (await API.get("/users")).data.data;
+export const fetchRecommendations = async (id: string) => (await API.get(`/users/${id}/recommendations`)).data.data;
+export const submitFeedback = async (id: string, payload: FeedbackPayload) => (await API.post(`/users/${id}/recommendations/feedback`, payload)).data;

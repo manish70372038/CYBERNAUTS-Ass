@@ -1,45 +1,20 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Component, ReactNode } from "react";
 
-interface Props { children: ReactNode; }
-interface State { hasError: boolean; error?: Error; }
+interface State { hasError: boolean }
 
-export default class ErrorBoundary extends Component<Props, State> {
-  state: State = { hasError: false };
-
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('[ErrorBoundary]', error, info);
-  }
-
+class ErrorBoundary extends Component<{ children: ReactNode }, State> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
   render() {
-    if (this.state.hasError) {
-      return (
-        <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'center', height: '100%', gap: 16,
-          fontFamily: 'Space Mono, monospace', color: '#ff4060',
-        }}>
-          <div style={{ fontSize: 48 }}>⚠</div>
-          <div style={{ fontSize: 14 }}>Something crashed.</div>
-          <pre style={{ fontSize: 11, color: '#555', maxWidth: 400, overflow: 'auto' }}>
-            {this.state.error?.message}
-          </pre>
-          <button
-            onClick={() => this.setState({ hasError: false })}
-            style={{
-              padding: '8px 20px', background: '#ff4060', border: 'none',
-              color: '#0a0a0f', fontFamily: 'inherit', cursor: 'pointer',
-              borderRadius: 4, fontSize: 12,
-            }}
-          >
-            RETRY
-          </button>
-        </div>
-      );
-    }
+    if (this.state.hasError)
+      return <div style={{ padding: 40, color: "#ef4444", textAlign: "center" }}>
+        <h2>Something went wrong.</h2>
+        <button onClick={() => this.setState({ hasError: false })} style={{ padding: "8px 20px", background: "#7c3aed", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer" }}>
+          Retry
+        </button>
+      </div>;
     return this.props.children;
   }
 }
+
+export default ErrorBoundary;

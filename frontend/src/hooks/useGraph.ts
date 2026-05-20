@@ -1,5 +1,1 @@
-import { useGraphContext } from "../context/GraphContext";
-
-export const useGraph = () => {
-  return useGraphContext();
-};
+export { useGraphContext as useGraph } from "../context/GraphContext";

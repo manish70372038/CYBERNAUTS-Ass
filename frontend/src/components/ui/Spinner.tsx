@@ -1,17 +1,11 @@
-export default function Spinner({ size = 24 }: { size?: number }) {
-  return (
-    <span
-      style={{
-        display: 'inline-block',
-        width: size,
-        height: size,
-        border: `2px solid #1a1a2e`,
-        borderTop: `2px solid #00ff9d`,
-        borderRadius: '50%',
-        animation: 'spin 0.7s linear infinite',
-      }}
-    >
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </span>
-  );
-}
+const Spinner = () => (
+  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+    <div style={{
+      width: 40, height: 40, border: "4px solid #2d2d44",
+      borderTop: "4px solid #7c3aed", borderRadius: "50%",
+      animation: "spin 0.8s linear infinite",
+    }} />
+  </div>
+);
+
+export default Spinner;
