@@ -1,0 +1,390 @@
+openapi: 3.0.0
+info:
+  title: Cybernauts Network API
+  version: 1.0.0
+  description: AI-Powered User Relationship & Hobby Network API
+
+servers:
+  - url: http://localhost:5000/api
+    description: Local development server
+
+paths:
+  /users:
+    get:
+      summary: Fetch all users
+      tags: [Users]
+      responses:
+        '200':
+          description: List of all users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+
+    post:
+      summary: Create a new user
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, age, hobbies]
+              properties:
+                username:
+                  type: string
+                  example: alice
+                age:
+                  type: number
+                  example: 25
+                hobbies:
+                  type: array
+                  items:
+                    type: string
+                  example: [Gaming, Music]
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /users/{id}:
+    put:
+      summary: Update a user
+      tags: [Users]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: User UUID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                age:
+                  type: number
+                hobbies:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete a user
+      tags: [Users]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User deleted
+        '409':
+          description: Cannot delete user with active friendships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{id}/link:
+    post:
+      summary: Create friendship between two users
+      tags: [Relationships]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Source user UUID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetUserId]
+              properties:
+                targetUserId:
+                  type: string
+                  example: e79cf4d1-c520-40f4-9855-736cca4683bb
+      responses:
+        '200':
+          description: Users linked successfully
+        '409':
+          description: Friendship already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{id}/unlink:
+    delete:
+      summary: Remove friendship between two users
+      tags: [Relationships]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetUserId]
+              properties:
+                targetUserId:
+                  type: string
+      responses:
+        '200':
+          description: Users unlinked successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /graph:
+    get:
+      summary: Get full graph data (nodes + edges)
+      tags: [Graph]
+      responses:
+        '200':
+          description: Graph data for React Flow
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      nodes:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            type:
+                              type: string
+                              enum: [highScore, lowScore]
+                            position:
+                              type: object
+                              properties:
+                                x:
+                                  type: number
+                                y:
+                                  type: number
+                            data:
+                              type: object
+                      edges:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            source:
+                              type: string
+                            target:
+                              type: string
+
+  /users/{id}/recommendations:
+    get:
+      summary: Get AI-powered friend and hobby recommendations
+      tags: [Recommendations]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: User UUID
+      responses:
+        '200':
+          description: Top 5 friend and hobby recommendations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      friendRecommendations:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FriendRecommendation'
+                      hobbyRecommendations:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/HobbyRecommendation'
+
+  /users/{id}/recommendations/feedback:
+    post:
+      summary: Submit feedback on a recommendation
+      tags: [Recommendations]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recommendationId, type, accepted]
+              properties:
+                recommendationId:
+                  type: string
+                type:
+                  type: string
+                  enum: [friend, hobby]
+                accepted:
+                  type: boolean
+      responses:
+        '200':
+          description: Feedback recorded
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 8b19cfb5-87f5-4d53-b620-221601806518
+        _id:
+          type: string
+          example: 6a0ca51f0bd2e7269b685792
+        username:
+          type: string
+          example: alice
+        age:
+          type: number
+          example: 25
+        hobbies:
+          type: array
+          items:
+            type: string
+          example: [Gaming, Music]
+        friends:
+          type: array
+          items:
+            type: string
+          example: []
+        popularityScore:
+          type: number
+          example: 3.5
+        createdAt:
+          type: string
+          format: date-time
+
+    FriendRecommendation:
+      type: object
+      properties:
+        userId:
+          type: string
+        username:
+          type: string
+        score:
+          type: number
+        reason:
+          type: string
+          example: You share 3 hobbies and have 2 mutual friends
+        sourceSignals:
+          type: array
+          items:
+            type: string
+          example: [shared-hobbies, mutual-friends]
+
+    HobbyRecommendation:
+      type: object
+      properties:
+        hobby:
+          type: string
+          example: Photography
+        score:
+          type: number
+        reason:
+          type: string
+          example: 4 of your friends enjoy Photography
+        sourceSignals:
+          type: array
+          items:
+            type: string
+          example: [friend-hobbies, semantic-similarity]
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
