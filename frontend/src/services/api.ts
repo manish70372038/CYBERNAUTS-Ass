@@ -1,48 +1,51 @@
-import axios from 'axios';
-import type {
-  User,
-  CreateUserPayload,
-  UpdateUserPayload,
-  GraphData,
-  RecommendationResponse,
-  FeedbackPayload,
-} from '../types';
+import axios from "axios";
+import { FeedbackPayload } from "../types";
 
-const api = axios.create({
-  baseURL: '/api',
-  headers: { 'Content-Type': 'application/json' },
-  timeout: 10000,
+const API = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
 });
 
-// ─── Users ────────────────────────────────────────────────────────────────────
-export const fetchUsers = (): Promise<User[]> =>
-  api.get<any>('/users').then((r) => r.data.data);
+export const fetchUsers = async () => {
+  const res = await API.get("/users");
+  return res.data.data;
+};
 
-export const createUser = (payload: CreateUserPayload): Promise<User> =>
-  api.post<any>('/users', payload).then((r) => r.data.data);
+export const createUser = async (data: { username: string; age: number; hobbies: string[] }) => {
+  const res = await API.post("/users", data);
+  return res.data.data;
+};
 
-export const updateUser = (id: string, payload: UpdateUserPayload): Promise<User> =>
-  api.put<any>(`/users/${id}`, payload).then((r) => r.data.data);
+export const updateUser = async (id: string, data: Partial<{ username: string; age: number; hobbies: string[] }>) => {
+  const res = await API.put(`/users/${id}`, data);
+  return res.data.data;
+};
 
-export const deleteUser = (id: string): Promise<void> =>
-  api.delete(`/users/${id}`).then(() => undefined);
+export const deleteUser = async (id: string) => {
+  const res = await API.delete(`/users/${id}`);
+  return res.data;
+};
 
-// ─── Relationships ─────────────────────────────────────────────────────────────
-export const linkUsers = (id: string, targetUserId: string): Promise<User> =>
-  api.post<any>(`/users/${id}/link`, { friendId: targetUserId }).then((r) => r.data.data);
+export const linkUsers = async (id: string, friendId: string) => {
+  const res = await API.post(`/users/${id}/link`, { friendId });
+  return res.data;
+};
 
-export const unlinkUsers = (id: string, targetUserId: string): Promise<User> =>
-  api.delete<any>(`/users/${id}/unlink`, { data: { friendId: targetUserId } }).then((r) => r.data.data);
+export const unlinkUsers = async (id: string, friendId: string) => {
+  const res = await API.delete(`/users/${id}/unlink`, { data: { friendId } });
+  return res.data;
+};
 
-// ─── Graph ─────────────────────────────────────────────────────────────────────
-export const fetchGraph = (): Promise<GraphData> =>
-  api.get<any>('/graph').then((r) => r.data.data);
+export const fetchGraph = async () => {
+  const res = await API.get("/graph");
+  return res.data.data;
+};
 
-// ─── Recommendations ───────────────────────────────────────────────────────────
-export const fetchRecommendations = (id: string): Promise<RecommendationResponse> =>
-  api.get<any>(`/users/${id}/recommendations`).then((r) => r.data.data);
+export const fetchRecommendations = async (id: string) => {
+  const res = await API.get(`/users/${id}/recommendations`);
+  return res.data.data;
+};
 
-export const submitFeedback = (id: string, payload: FeedbackPayload): Promise<void> =>
-  api.post(`/users/${id}/recommendations/feedback`, payload).then(() => undefined);
-
-export default api;
+export const submitFeedback = async (id: string, payload: FeedbackPayload) => {
+  const res = await API.post(`/users/${id}/recommendations/feedback`, payload);
+  return res.data;
+};
