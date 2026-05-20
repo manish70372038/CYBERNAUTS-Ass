@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback } from "react";
 import ReactFlow, {
   Node, Edge, addEdge, useNodesState, useEdgesState,
   Connection, Background, Controls, MiniMap,
@@ -18,7 +18,6 @@ const GraphCanvas = ({ onNodeClick }: { onNodeClick?: (id: string) => void }) =>
   const { link } = useUsers();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [dragHobby, setDragHobby] = useState<string | null>(null);
 
   useEffect(() => {
     if (!graphData) return;
@@ -45,13 +44,6 @@ const GraphCanvas = ({ onNodeClick }: { onNodeClick?: (id: string) => void }) =>
     setEdges(e);
   }, [graphData]);
 
-  // Listen for hobby drag from sidebar
-  useEffect(() => {
-    const handler = (e: CustomEvent) => setDragHobby(e.detail);
-    window.addEventListener("hobby-drag-start" as any, handler);
-    return () => window.removeEventListener("hobby-drag-start" as any, handler);
-  }, []);
-
   const onConnect = useCallback(
     async (params: Connection) => {
       if (params.source && params.target) {
@@ -68,7 +60,6 @@ const GraphCanvas = ({ onNodeClick }: { onNodeClick?: (id: string) => void }) =>
       const hobby = event.dataTransfer.getData("hobby");
       if (!hobby || !graphData) return;
 
-      // Find which node was dropped on
       const el = document.elementFromPoint(event.clientX, event.clientY);
       const nodeEl = el?.closest(".react-flow__node");
       if (!nodeEl) { addToast("Drop on a user node!", "warning"); return; }

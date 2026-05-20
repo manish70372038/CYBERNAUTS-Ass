@@ -3,7 +3,7 @@ import { useUsers } from "../../hooks/useUsers";
 import { useRecommendations } from "../../hooks/useRecommendations";
 import { User } from "../../types";
 
-const UserPanel = ({ selectedUserId }: { selectedUserId?: string }) => {
+const UserPanel = () => {
   const { users, create, update, remove, unlink } = useUsers();
   const { recommendations, loading: recLoading, load: loadRecs, feedback } = useRecommendations();
   const [username, setUsername] = useState("");
@@ -33,7 +33,8 @@ const UserPanel = ({ selectedUserId }: { selectedUserId?: string }) => {
   };
 
   const s = (v: string) => ({
-    btn: { padding: "4px 10px", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 11, background: v, color: "#fff" }
+    padding: "4px 10px", border: "none", borderRadius: 6,
+    cursor: "pointer", fontSize: 11, background: v, color: "#fff"
   });
 
   return (
@@ -56,12 +57,13 @@ const UserPanel = ({ selectedUserId }: { selectedUserId?: string }) => {
 
       {tab === "users" && (
         <>
-          {/* Form */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <input value={username} onChange={(e) => setUsername(e.target.value)}
-              placeholder="Username *" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #2d2d44", background: "#1a1a2e", color: "#e2e8f0", fontSize: 13 }} />
+              placeholder="Username *"
+              style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #2d2d44", background: "#1a1a2e", color: "#e2e8f0", fontSize: 13 }} />
             <input value={age} onChange={(e) => setAge(e.target.value)}
-              placeholder="Age *" type="number" style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #2d2d44", background: "#1a1a2e", color: "#e2e8f0", fontSize: 13 }} />
+              placeholder="Age *" type="number"
+              style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #2d2d44", background: "#1a1a2e", color: "#e2e8f0", fontSize: 13 }} />
             <button onClick={handleSubmit} style={{
               padding: "9px", background: editId ? "#059669" : "#7c3aed",
               color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600,
@@ -76,7 +78,6 @@ const UserPanel = ({ selectedUserId }: { selectedUserId?: string }) => {
             )}
           </div>
 
-          {/* User List */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {users.map((u: User) => (
               <div key={u.id} style={{ background: "#1a1a2e", padding: 10, borderRadius: 10, border: "1px solid #2d2d44" }}>
@@ -86,25 +87,24 @@ const UserPanel = ({ selectedUserId }: { selectedUserId?: string }) => {
                 {u.hobbies?.length > 0 && (
                   <div style={{ fontSize: 10, color: "#a78bfa", marginTop: 3 }}>{u.hobbies.join(", ")}</div>
                 )}
-                {/* Friends list with unlink */}
                 {u.friends?.length > 0 && (
                   <div style={{ marginTop: 6 }}>
                     <div style={{ fontSize: 10, color: "#64748b", marginBottom: 3 }}>Friends:</div>
                     {u.friends.map((fid: string) => {
-                      const friend = users.find((x) => x.id === fid);
+                      const friend = users.find((x: User) => x.id === fid);
                       return friend ? (
                         <div key={fid} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, marginBottom: 2 }}>
                           <span>{friend.username}</span>
                           <button onClick={() => unlink(u.id, fid)}
-                            style={{ ...s("#ef4444").btn, fontSize: 10, padding: "2px 6px" }}>unlink</button>
+                            style={s("#ef4444")}>unlink</button>
                         </div>
                       ) : null;
                     })}
                   </div>
                 )}
                 <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-                  <button onClick={() => handleEdit(u)} style={s("#2563eb").btn}>✏️ Edit</button>
-                  <button onClick={() => handleDelete(u)} style={s("#dc2626").btn}>🗑️ Delete</button>
+                  <button onClick={() => handleEdit(u)} style={s("#2563eb")}>✏️ Edit</button>
+                  <button onClick={() => handleDelete(u)} style={s("#dc2626")}>🗑️ Delete</button>
                 </div>
               </div>
             ))}
@@ -114,11 +114,8 @@ const UserPanel = ({ selectedUserId }: { selectedUserId?: string }) => {
 
       {tab === "recs" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <select
-            value={recUserId}
-            onChange={(e) => setRecUserId(e.target.value)}
-            style={{ padding: "8px", borderRadius: 8, border: "1px solid #2d2d44", background: "#1a1a2e", color: "#e2e8f0", fontSize: 13 }}
-          >
+          <select value={recUserId} onChange={(e) => setRecUserId(e.target.value)}
+            style={{ padding: "8px", borderRadius: 8, border: "1px solid #2d2d44", background: "#1a1a2e", color: "#e2e8f0", fontSize: 13 }}>
             <option value="">Select user...</option>
             {users.map((u: User) => <option key={u.id} value={u.id}>{u.username}</option>)}
           </select>
@@ -131,7 +128,7 @@ const UserPanel = ({ selectedUserId }: { selectedUserId?: string }) => {
             <>
               <div style={{ fontSize: 12, fontWeight: 700, color: "#a78bfa" }}>👥 Friend Suggestions</div>
               {recommendations.friendRecommendations.length === 0 && (
-                <div style={{ fontSize: 11, color: "#64748b" }}>No suggestions yet — add more users!</div>
+                <div style={{ fontSize: 11, color: "#64748b" }}>No suggestions — add more users!</div>
               )}
               {recommendations.friendRecommendations.map((r) => (
                 <div key={r.userId} style={{ background: "#1a1a2e", padding: 10, borderRadius: 8, border: "1px solid #2d2d44" }}>
@@ -140,9 +137,9 @@ const UserPanel = ({ selectedUserId }: { selectedUserId?: string }) => {
                   <div style={{ fontSize: 10, color: "#a78bfa" }}>Score: {r.score}</div>
                   <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
                     <button onClick={() => feedback(recUserId, { type: "friend", value: r.userId!, action: "accept" })}
-                      style={s("#059669").btn}>✓ Accept</button>
+                      style={s("#059669")}>✓ Accept</button>
                     <button onClick={() => feedback(recUserId, { type: "friend", value: r.userId!, action: "reject" })}
-                      style={s("#dc2626").btn}>✗ Reject</button>
+                      style={s("#dc2626")}>✗ Reject</button>
                   </div>
                 </div>
               ))}
@@ -157,9 +154,9 @@ const UserPanel = ({ selectedUserId }: { selectedUserId?: string }) => {
                   <div style={{ fontSize: 10, color: "#94a3b8" }}>{r.reason}</div>
                   <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
                     <button onClick={() => feedback(recUserId, { type: "hobby", value: r.hobby!, action: "accept" })}
-                      style={s("#059669").btn}>✓ Accept</button>
+                      style={s("#059669")}>✓ Accept</button>
                     <button onClick={() => feedback(recUserId, { type: "hobby", value: r.hobby!, action: "reject" })}
-                      style={s("#dc2626").btn}>✗ Reject</button>
+                      style={s("#dc2626")}>✗ Reject</button>
                   </div>
                 </div>
               ))}
