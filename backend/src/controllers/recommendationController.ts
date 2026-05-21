@@ -79,7 +79,7 @@ export const submitFeedback = async (
         (v) => v !== value
       );
     } else {
-      // अगर फिर भी कुछ गलत आता है तो रिस्पॉन्स में साफ़ दिखेगा कि क्या आया था
+      
       res.status(400).json({ 
         success: false, 
         message: `Invalid action '${action}'. Use 'accept' or 'reject'` 
@@ -87,7 +87,7 @@ export const submitFeedback = async (
       return;
     }
 
-    // Mongoose को बताओ कि नेस्टेड ऑब्जेक्ट चेंज हुआ है
+    
     user.markModified('feedbackData');
     
     await user.save();
