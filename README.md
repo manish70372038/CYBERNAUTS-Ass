@@ -405,3 +405,6 @@ Import the Postman collection from `swagger.yaml` or use the base URL `http://lo
 
 **Manish**
 Cybernauts Development Assignment — Full Stack (Node.js + MongoDB + React + TypeScript)
+## 📹 Demo Video
+
+[![Watch Demo](https://img.shields.io/badge/Watch-Demo%20Video-red?style=for-the-badge&logo=loom)](https://www.loom.com/share/08cf51407f37426db74d195b7cb61074)
